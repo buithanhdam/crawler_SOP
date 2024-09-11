@@ -64,8 +64,12 @@ def get_data():
                 for img in main_element.find_all("img"):
                     src = img.get("src")
                     if src:
-                        img["src"] = urljoin(current_url, src)
-                
+                        # Create a new tag or text to replace the <img> tag
+                        img_tag = soup.new_tag("p")
+                        img_tag.string = "Image URL: [img["+ urljoin(current_url, src) + "]img]"
+                        img.insert_after(img_tag)
+                        img.decompose() 
+                        
                 # Optionally, handle other media like <source> tags in <picture>, etc.
                 
                 # Save the HTML content with images
