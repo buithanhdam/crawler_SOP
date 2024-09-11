@@ -214,15 +214,20 @@ class Crawler:
                     html_content = str(main_element)
                 
                     # Determine the save path based on the URL structure and sub-link count
-                    # file_name = self.split_url(current_url)
-                    # file_output = os.path.join("output", f"{file_name}.pdf")
                     output_filename = self.determine_save_path(base_url, current_url, sub_link_count)
                     try:
                         pdfkit.from_string(html_content, output_filename, options=self.__pdf_options__, configuration=self.__config__)
                         self.__db__.add_url(base_url,current_url,output_filename)
                         print(f"PDF saved to {output_filename}")
-                    except OSError as pdf_error:
-                        print(f"Failed to save PDF for {current_url}. Error: {pdf_error}")     
+                    except:
+                        try:
+                            file_name = self.split_url(current_url)
+                            file_output = os.path.join("output", f"{file_name}.pdf")
+                            pdfkit.from_string(html_content, file_output, options=self.__pdf_options__, configuration=self.__config__)
+                            self.__db__.add_url(base_url,current_url,file_output)
+                            print(f"PDF saved to {file_output}")
+                        except OSError as pdf_error:
+                            print(f"Failed to save PDF for {current_url}. Error: {pdf_error}")     
                 else:
                     print("No <main> content found.")
                                     
