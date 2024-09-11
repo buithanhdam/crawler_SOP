@@ -175,6 +175,7 @@ class Crawler:
         
     def crawl(self,base_url):
         try:
+            os.makedirs("output", exist_ok=True)
             urls = self.get_urls_to_crawl(base_url)
             if len(urls) ==0:
                 print("Data from paper url already upto-date.")
