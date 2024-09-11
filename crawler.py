@@ -137,6 +137,7 @@ def get_data():
                         img_tag.string = "Image URL: [img["+ urljoin(current_url, src) + "]img]"
                         img.insert_after(img_tag)
                         img.decompose() 
+
                 
                 # Save the HTML content with images
                 html_content = str(main_element)
