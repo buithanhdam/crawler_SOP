@@ -8,6 +8,8 @@ import os
 import sqlite3
 from contextlib import contextmanager
   
+  
+# extract ul li or find a with href (#ascasc, full https://.. , /.... )
 class SQLite:
     __db_name__ = "crawler.db"
     def __init__(self):
