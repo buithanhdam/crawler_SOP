@@ -8,7 +8,6 @@ from urllib.parse import urljoin, urlparse
 from selenium.webdriver.support import expected_conditions as EC
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from pathos.multiprocessing import ProcessingPool as Pool 
 from threading import Semaphore
 import os 
 import sqlite3
@@ -178,7 +177,7 @@ class Crawler:
         instance.__db__ = SQLite()
         return instance
     def __init__(self):
-        os.makedirs(os.path.dirname("output"), exist_ok=True)
+        os.makedirs(os.path.join("output"), exist_ok=True)
         pass
     def url_to_path(self, url, base_url):
         """
@@ -262,7 +261,7 @@ class Crawler:
         visited_urls = set()
         queue = [self.normalize_url(base_url)]
         base_domain = urlparse(base_url).netloc
-        base_status = self.check_and_get_base_url_status(base_url)
+        base_status = self.__db__.check_and_get_base_url_status(base_url)
         if base_status['exists'] and base_status['status'] =='done':
             print(f"Base URL tồn tại với ID: {base_status['id']}, trạng thái: {base_status['status']}")
             return
@@ -321,4 +320,4 @@ class Crawler:
         self.__db__.update_base_url_status(base_url)                                   
 if __name__ == "__main__":
     c = Crawler()
-    c.crawl_threaded(base_url='https://emind.vn/')
+    c.crawl_threaded(base_url='https://noithatphucan.com.vn/')
