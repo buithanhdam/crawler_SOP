@@ -27,13 +27,3 @@ pip install -r requirements.txt
 ```
 
 ### Note:
-
-* **Need help fix :( ** *
-
-    * Failed to save PDF for https://fpt-7.gitbook.io/hdsd-sale-online-platform-sop/chat-and-binh-luan/kenh-chat-facebook/fb-goi-y-khach-hang-chia-se-thong-tin-kenh-facebook. Error: wkhtmltopdf exited with non-zero code 1. error: QPainter::begin(): Returned false Exit with code 1, due to unknown error.
-
-    * Failed to save PDF for https://fpt-7.gitbook.io/hdsd-sale-online-platform-sop/chat-and-binh-luan/kenh-chat-zalo/zalooa-goi-y-khach-hang-chia-se-thong-tin-kenh-zalooa. Error: wkhtmltopdf exited with non-zero code 1. error: QPainter::begin(): Returned false Exit with code 1, due to unknown error.
-
-    * Failed to save PDF for https://fpt-7.gitbook.io/hdsd-sale-online-platform-sop/chuc-nang-dang-bai/quan-ly-bai-viet. Error: wkhtmltopdf reported an error: Exit with code 1 due to network error: ContentOperationNotPermittedError
-
-    * Failed to save PDF for https://fpt-7.gitbook.io/hdsd-sale-online-platform-sop/chat-and-binh-luan/kenh-binh-luan/chuc-nang-quan-ly-hoi-thoai-binh-luan. Error: wkhtmltopdf exited with non-zero code 1. error:QPainter::begin(): Returned false Exit with code 1, due to unknown error. 
