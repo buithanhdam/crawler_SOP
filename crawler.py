@@ -163,22 +163,17 @@ class Crawler:
     __semaphore__ : Semaphore
     __db__ :SQLite
     base_url = "https://fpt-7.gitbook.io/hdsd-sale-online-platform-sop"
-    def __new__(cls):
-        instance = super().__new__(cls)
-        instance.__driver_options__ = Options()
-        instance.__driver_options__.add_argument("--headless")  # Run in headless mode
-        instance.__driver_options__.add_argument("--disable-gpu")  # Disable GPU acceleration
-        instance.__driver_options__.add_argument("--no-sandbox")  # Bypass OS security model
-        instance.__driver_options__.add_argument("--disable-dev-shm-usage")
-        instance.__driver_options__.add_argument('--ignore-certificate-errors')
-        instance.__driver_options__.add_argument('--ignore-ssl-errors') 
-        instance.__driver__ = webdriver.Edge(options=instance.__driver_options__)
-        instance.__semaphore__= Semaphore(instance.MAX_CONNECTIONS)
-        instance.__db__ = SQLite()
-        return instance
     def __init__(self):
-        os.makedirs(os.path.join("output"), exist_ok=True)
-        pass
+        __driver_options__ = Options()
+        __driver_options__.add_argument("--headless")  # Run in headless mode
+        __driver_options__.add_argument("--disable-gpu")  # Disable GPU acceleration
+        __driver_options__.add_argument("--no-sandbox")  # Bypass OS security model
+        __driver_options__.add_argument("--disable-dev-shm-usage")
+        __driver_options__.add_argument('--ignore-certificate-errors')
+        __driver_options__.add_argument('--ignore-ssl-errors') 
+        self.__driver__ = webdriver.Edge(options=__driver_options__)
+        self.__semaphore__= Semaphore(self.MAX_CONNECTIONS)
+        self.__db__ = SQLite()
     def url_to_path(self, url, base_url):
         """
         Chuyển URL thành một đường dẫn file hợp lệ để lưu HTML.
@@ -265,59 +260,61 @@ class Crawler:
         if base_status['exists'] and base_status['status'] =='done':
             print(f"Base URL tồn tại với ID: {base_status['id']}, trạng thái: {base_status['status']}")
             return
-        
-        with ThreadPoolExecutor(max_workers=self.num_workers) as executor:
-            while queue:
-                futures = {executor.submit(self.fetch_url, url): url for url in queue}
-                queue = []
-                for future in as_completed(futures):
-                    url, soup = future.result()
-                    if url and soup and url not in visited_urls:
-                        visited_urls.add(url)
-                        print(f'Crawling {url}')
-                        body = soup.find('body')
-                        if body:
-                            url_tag = soup.new_tag("p")
-                            url_tag.string = f"Paper URL: [paper[{url}]paper]"
-                            body.insert(0, url_tag) 
-                            # Loại bỏ các thẻ không cần thiết
-                            for tag in body(TAG_TO_EXCULDE):
-                                tag.decompose()
-                            for img in body.find_all("img"):
-                                src = img.get("src")
-                                if src:
-                                    # Create a new tag or text to replace the <img> tag
-                                    img_tag = soup.new_tag("p")
-                                    img_tag.string = "Image URL: [img["+ urljoin(url, src) + "]img]"
-                                    img.insert_after(img_tag)
-                                    img.decompose()
-                            try:
-                            # Chuyển URL thành đường dẫn file
-                                file_path = self.url_to_path(url, base_url)
-                                self.save_html_content(body, file_path)
-                                self.__db__.add_url(base_url,url,file_path,".html")
-                            except:
-                                continue
-                        for tag, attribute in TAGS_WITH_URLS.items():
-                            for element in soup.find_all(tag):
-                                link = element.get(attribute)
-                                if link:
-                                    # Bỏ qua các URL hình ảnh (dựa trên phần mở rộng file)
-                                    if any(re.search(pattern, link) for pattern in PATTERNS_TO_EXCLUDE):
-                                        continue
-                                    # Xử lý URL tương đối
-                                    if link.startswith('/'):
-                                        full_url = urljoin(base_url, link)  # Kết hợp với base URL để tạo thành URL tuyệt đối
-                                        normalized_url = self.normalize_url(full_url)
-                                        if self.is_valid_url(normalized_url, base_domain) and normalized_url not in visited_urls:
-                                            queue.append(normalized_url)
+        try:
+            with ThreadPoolExecutor(max_workers=self.num_workers) as executor:
+                while queue:
+                    futures = {executor.submit(self.fetch_url, url): url for url in queue}
+                    queue = []
+                    for future in as_completed(futures):
+                        url, soup = future.result()
+                        if url and soup and url not in visited_urls:
+                            visited_urls.add(url)
+                            print(f'Crawling {url}')
+                            body = soup.find('body')
+                            if body:
+                                url_tag = soup.new_tag("p")
+                                url_tag.string = f"Paper URL: [paper[{url}]paper]"
+                                body.insert(0, url_tag) 
+                                # Loại bỏ các thẻ không cần thiết
+                                for tag in body(TAG_TO_EXCULDE):
+                                    tag.decompose()
+                                for img in body.find_all("img"):
+                                    src = img.get("src")
+                                    if src:
+                                        # Create a new tag or text to replace the <img> tag
+                                        img_tag = soup.new_tag("p")
+                                        img_tag.string = "Image URL: [img["+ urljoin(url, src) + "]img]"
+                                        img.insert_after(img_tag)
+                                        img.decompose()
+                                try:
+                                # Chuyển URL thành đường dẫn file
+                                    file_path = self.url_to_path(url, base_url)
+                                    self.save_html_content(body, file_path)
+                                    self.__db__.add_url(base_url,url,file_path,".html")
+                                except:
+                                    continue
+                            for tag, attribute in TAGS_WITH_URLS.items():
+                                for element in soup.find_all(tag):
+                                    link = element.get(attribute)
+                                    if link:
+                                        # Bỏ qua các URL hình ảnh (dựa trên phần mở rộng file)
+                                        if any(re.search(pattern, link) for pattern in PATTERNS_TO_EXCLUDE):
+                                            continue
+                                        # Xử lý URL tương đối
+                                        if link.startswith('/'):
+                                            full_url = urljoin(base_url, link)  # Kết hợp với base URL để tạo thành URL tuyệt đối
+                                            normalized_url = self.normalize_url(full_url)
+                                            if self.is_valid_url(normalized_url, base_domain) and normalized_url not in visited_urls:
+                                                queue.append(normalized_url)
 
-                                    # Xử lý URL tuyệt đối và kiểm tra tính hợp lệ với domain cơ sở
-                                    elif link.startswith('http://') or url.startswith('https://'):
-                                        normalized_url = self.normalize_url(link)
-                                        if self.is_valid_url(normalized_url, base_domain) and normalized_url not in visited_urls:
-                                            queue.append(normalized_url)
-        self.__db__.update_base_url_status(base_url)                                   
+                                        # Xử lý URL tuyệt đối và kiểm tra tính hợp lệ với domain cơ sở
+                                        elif link.startswith('http://') or url.startswith('https://'):
+                                            normalized_url = self.normalize_url(link)
+                                            if self.is_valid_url(normalized_url, base_domain) and normalized_url not in visited_urls:
+                                                queue.append(normalized_url)
+            self.__db__.update_base_url_status(base_url)   
+        except KeyboardInterrupt:
+            print("out")                                
 if __name__ == "__main__":
     c = Crawler()
-    c.crawl_threaded(base_url='https://noithatphucan.com.vn/')
+    c.crawl_threaded(base_url='https://noithatphucan.com.vn/thiet-ke-noi-that-chung-cu-anh-vu.html')
